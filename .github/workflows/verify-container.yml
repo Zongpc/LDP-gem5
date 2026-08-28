@@ -41,12 +41,13 @@ jobs:
         env:
           IMAGE: ghcr.io/zongpc/ldp-gem5@${{ inputs.image_digest }}
         run: |
-          mkdir results
-          /usr/bin/time -v docker run --rm \
-            --user "$(id -u):$(id -g)" -e HOME=/tmp \
-            -v "$PWD/results:/results" \
+          docker create --name ldp-ae-ci --platform linux/amd64 \
             "$IMAGE" \
             --run-profile "${{ inputs.run_profile }}" --jobs 4
+          /usr/bin/time -v docker start -a ldp-ae-ci
+          mkdir results
+          docker cp ldp-ae-ci:/results/. ./results/
+          docker rm ldp-ae-ci
           test -s "results/${{ inputs.run_profile }}/analysis/mechanism.png"
 
       - uses: actions/upload-artifact@v4

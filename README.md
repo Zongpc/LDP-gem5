@@ -25,15 +25,16 @@ more closely reflects the paper's full-execution trend.
 
 ## One-command Docker reproduction
 
-The image includes the simulator and compatible checkpoints. The bind mount
-keeps all generated files in a separate host-side `results` directory:
+The image includes the simulator and compatible checkpoints. The portable
+launchers run without a host bind mount and use `docker cp` afterward, avoiding
+UID/GID and Windows directory-sharing differences:
 
 ```bash
-mkdir -p results
-docker run --rm \
-  --user "$(id -u):$(id -g)" -e HOME=/tmp \
-  -v "$PWD/results:/results" \
-  ghcr.io/zongpc/ldp-gem5:micro26-final
+# Linux, macOS, or WSL
+./scripts/run-docker.sh fast
+
+# Windows PowerShell
+.\scripts\run-docker.ps1 -Profile fast
 ```
 
 The default command runs and validates the `fast` profile, prints task,
@@ -53,16 +54,14 @@ Fig. 24-style result. No GUI or display server is required inside Docker.
 Run the completion-based profile with:
 
 ```bash
-docker run --rm \
-  --user "$(id -u):$(id -g)" -e HOME=/tmp \
-  -v "$PWD/results:/results" \
-  ghcr.io/zongpc/ldp-gem5:micro26-final \
-  --run-profile full --jobs 4
+./scripts/run-docker.sh full
+# PowerShell: .\scripts\run-docker.ps1 -Profile full
 ```
 
-The UID/GID mapping makes bind-mounted files host-owned and writable. On
-Windows Docker Desktop, use a writable shared local directory; see
-[ARTIFACT.md](ARTIFACT.md) for platform-specific guidance.
+The scripts request `linux/amd64`, retain a failed container for diagnosis,
+and copy successful outputs to `results/<profile>`. A manual
+`docker create`/`docker start`/`docker cp` sequence and optional bind-mount
+commands are documented in [ARTIFACT.md](ARTIFACT.md).
 
 ## Native build and reproduction
 

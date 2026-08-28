@@ -36,12 +36,13 @@ jobs:
         env:
           IMAGE: ghcr.io/zongpc/ldp-gem5@${{ inputs.image_digest }}
         run: |
-          mkdir results
-          /usr/bin/time -v docker run --rm \
-            --user "$(id -u):$(id -g)" -e HOME=/tmp \
-            -v "$PWD/results:/results" \
+          docker create --name ldp-mechanism-ci --platform linux/amd64 \
             "$IMAGE" \
             --run-profile "${{ inputs.run_profile }}" --jobs 4
+          /usr/bin/time -v docker start -a ldp-mechanism-ci
+          mkdir results
+          docker cp ldp-mechanism-ci:/results/. ./results/
+          docker rm ldp-mechanism-ci
 
       - name: Validate mechanism results
         run: |

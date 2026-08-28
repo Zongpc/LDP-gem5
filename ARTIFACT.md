@@ -60,18 +60,33 @@ Pull the evaluated image:
 docker pull ghcr.io/zongpc/ldp-gem5:micro26-final
 ```
 
-Create a host output directory and run the complete bounded workflow:
+The recommended workflow does not bind-mount a host directory while gem5 is
+running. It keeps the stopped container long enough to copy the completed
+results:
 
 ```bash
+IMAGE=ghcr.io/zongpc/ldp-gem5:micro26-final
+docker create --name ldp-ae-fast --platform linux/amd64 \
+  "$IMAGE" --run-profile fast --jobs 4
+docker start -a ldp-ae-fast
 mkdir -p results
-docker run --rm \
-  --user "$(id -u):$(id -g)" -e HOME=/tmp \
-  -v "$PWD/results:/results" \
-  ghcr.io/zongpc/ldp-gem5:micro26-final
+docker cp ldp-ae-fast:/results/. ./results/
+docker rm ldp-ae-fast
 ```
 
-This single command runs no-prefetching, LDP without loop decoupling, and full
-LDP for all nine tasks. It then:
+The repository launchers perform the same sequence with a unique container
+name:
+
+```bash
+# Linux, macOS, or WSL
+./scripts/run-docker.sh fast
+
+# Windows PowerShell
+.\scripts\run-docker.ps1 -Profile fast
+```
+
+The workflow runs no-prefetching, LDP without loop decoupling, and full LDP
+for all nine tasks. It then:
 
 1. reports task, application, and overall LDP speedups;
 2. validates the speedup reproduction;
@@ -86,32 +101,37 @@ MECHANISM REPRODUCTION PASSED
 ```
 
 The runner only prints the Fig. 18 consistency statement after both
-validations pass. The PNG is written through the bind mount and can be opened
-directly on the host; no graphical environment is needed in the container.
+validations pass. `docker cp` exports the PNG with the other results, so no
+graphical environment is needed in the container.
 
-Run the completion-based profile in a separate profile directory:
+Run the completion-based profile in its own profile directory:
 
 ```bash
-docker run --rm \
-  --user "$(id -u):$(id -g)" -e HOME=/tmp \
-  -v "$PWD/results:/results" \
-  ghcr.io/zongpc/ldp-gem5:micro26-final \
-  --run-profile full --jobs 4
+./scripts/run-docker.sh full
+# PowerShell: .\scripts\run-docker.ps1 -Profile full
 ```
 
-### Bind-mount permissions
+### Output-permission portability
 
-The container process must be able to create files in the host-mounted output
-directory. The documented
-`--user "$(id -u):$(id -g)" -e HOME=/tmp` options map it to the invoking POSIX
-user, preventing the UID/GID mismatch that can otherwise make `/results`
-unwritable or leave root/container-owned files on the host.
+An earlier bind-mount command could fail when the image user and host user had
+different UID/GID values. Passing a POSIX `--user` mapping does not solve the
+same problem on Windows Docker Desktop, whose Git Bash UID is not a Linux host
+UID. The default create/start/copy workflow avoids this mismatch entirely:
+gem5 writes to the image-owned `/results`, and the Docker daemon copies the
+finished files to the host afterward.
 
-If a POSIX host still reports a permission error, verify that the current user
-owns `results`; as a temporary fallback, use `chmod a+rwx results`. On Windows
-Docker Desktop, `id` is not available in PowerShell: place `results` in a
-writable shared local directory and omit `--user`; WSL users can use the
-documented POSIX command from a Linux-filesystem directory.
+For advanced POSIX use, a bind mount remains supported when the container is
+mapped to the host user:
+
+```bash
+mkdir -p results
+docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+  -v "$PWD/results:/results" "$IMAGE" --run-profile fast --jobs 4
+```
+
+Do not use this UID/GID form from Windows Git Bash or PowerShell. Prefer the
+provided PowerShell launcher; a Docker named volume is another portable
+alternative for repeated runs.
 
 ## 5. Native workflow
 
