@@ -60,22 +60,8 @@ Pull the evaluated image:
 docker pull ghcr.io/zongpc/ldp-gem5:micro26-final
 ```
 
-The recommended workflow does not bind-mount a host directory while gem5 is
-running. It keeps the stopped container long enough to copy the completed
-results:
-
-```bash
-IMAGE=ghcr.io/zongpc/ldp-gem5:micro26-final
-docker create --name ldp-ae-fast --platform linux/amd64 \
-  "$IMAGE" --run-profile fast --jobs 4
-docker start -a ldp-ae-fast
-mkdir -p results
-docker cp ldp-ae-fast:/results/. ./results/
-docker rm ldp-ae-fast
-```
-
-The repository launchers perform the same sequence with a unique container
-name:
+The recommended launchers do not bind-mount a host directory while gem5 is
+running:
 
 ```bash
 # Linux, macOS, or WSL
@@ -84,6 +70,12 @@ name:
 # Windows PowerShell
 .\scripts\run-docker.ps1 -Profile fast
 ```
+
+They use a unique container name and keep the stopped container until export
+succeeds. On a fresh checkout, output goes to `results/fast`. If `results`
+already exists, the launcher selects a fresh timestamped directory instead
+of merging with stale or root-owned files. Set `RESULTS_DIR=new-results` on
+POSIX, or `-OutputDir new-results` in PowerShell, to choose another new path.
 
 The workflow runs no-prefetching, LDP without loop decoupling, and full LDP
 for all nine tasks. It then:
@@ -98,11 +90,14 @@ The final success messages include:
 ```text
 VALIDATION PASSED: 9 task(s)
 MECHANISM REPRODUCTION PASSED
+[CHECK PASSED] SPEEDUP REPRODUCTION PASSED
+[CHECK PASSED] LOOP DECOUPLING IS EFFECTIVE
+[EVIDENCE] Overall speedup: ... without loop decoupling -> ... with full LDP
 ```
 
-The runner only prints the Fig. 18 consistency statement after both
-validations pass. `docker cp` exports the PNG with the other results, so no
-graphical environment is needed in the container.
+The runner displays the final three lines in a prominent green banner and
+only prints them after both validations pass. `docker cp` exports the PNG with
+the other results, so no graphical environment is needed in the container.
 
 Run the completion-based profile in its own profile directory:
 
@@ -118,7 +113,18 @@ different UID/GID values. Passing a POSIX `--user` mapping does not solve the
 same problem on Windows Docker Desktop, whose Git Bash UID is not a Linux host
 UID. The default create/start/copy workflow avoids this mismatch entirely:
 gem5 writes to the image-owned `/results`, and the Docker daemon copies the
-finished files to the host afterward.
+finished files to a newly created host directory afterward. The host working
+directory itself must still permit the invoking user to create a new folder.
+
+If a completed container was retained after an export error, do not rerun the
+simulations. Export it to a new sibling directory:
+
+```bash
+OUTPUT="ldp-results-$(date +%Y%m%d-%H%M%S)"
+mkdir "$OUTPUT"
+docker cp <container-name>:/results/. "$OUTPUT/"
+docker rm <container-name>
+```
 
 For advanced POSIX use, a bind mount remains supported when the container is
 mapped to the host user:

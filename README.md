@@ -38,7 +38,16 @@ UID/GID and Windows directory-sharing differences:
 ```
 
 The default command runs and validates the `fast` profile, prints task,
-application, and overall speedups, and creates:
+application, and overall speedups. Only after both validators pass, it prints
+a prominent green conclusion:
+
+```text
+[CHECK PASSED] SPEEDUP REPRODUCTION PASSED
+[CHECK PASSED] LOOP DECOUPLING IS EFFECTIVE
+[EVIDENCE] Overall speedup: ... without loop decoupling -> ... with full LDP
+```
+
+It also creates:
 
 ```text
 results/fast/analysis/speedup.csv
@@ -59,7 +68,9 @@ Run the completion-based profile with:
 ```
 
 The scripts request `linux/amd64`, retain a failed container for diagnosis,
-and copy successful outputs to `results/<profile>`. A manual
+and copy successful outputs to `results/<profile>`. If `results` already
+exists, they choose a fresh timestamped directory rather than merging with
+possibly stale or root-owned files. A manual
 `docker create`/`docker start`/`docker cp` sequence and optional bind-mount
 commands are documented in [ARTIFACT.md](ARTIFACT.md).
 

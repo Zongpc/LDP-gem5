@@ -5,6 +5,7 @@ IMAGE="${IMAGE:-ghcr.io/zongpc/ldp-gem5:micro26-final}"
 PROFILE="${1:-fast}"
 JOBS="${JOBS:-4}"
 CONTAINER="ldp-ae-${PROFILE}-$$"
+OUTPUT_DIR="${RESULTS_DIR:-results}"
 
 case "$PROFILE" in
     fast|full) ;;
@@ -25,7 +26,15 @@ if ! docker start -a "$CONTAINER"; then
     exit 1
 fi
 
-mkdir -p results
-docker cp "$CONTAINER:/results/." ./results/
+if [ -e "$OUTPUT_DIR" ]; then
+    OUTPUT_DIR="${OUTPUT_DIR}-${PROFILE}-$(date +%Y%m%d-%H%M%S)-$$"
+    echo "Existing output path detected; exporting to: $OUTPUT_DIR"
+fi
+mkdir -p "$OUTPUT_DIR"
+if ! docker cp "$CONTAINER:/results/." "$OUTPUT_DIR/"; then
+    echo "Export failed; retained container: $CONTAINER" >&2
+    exit 1
+fi
 docker rm "$CONTAINER" >/dev/null
-echo "Results copied to: $(pwd)/results/$PROFILE"
+OUTPUT_ABS="$(cd "$OUTPUT_DIR" && pwd)"
+echo "Results copied to: $OUTPUT_ABS/$PROFILE"
