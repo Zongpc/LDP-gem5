@@ -1,11 +1,11 @@
 {
   "title": "LDP-gem5: MICRO 2026 Artifact for the Loop-Decoupled Prefetcher",
-  "description": "Source code, fixed workloads, checkpoints, Docker image, expected results, and evaluation workflow for the MICRO 2026 paper Loop-Decoupled Prefetcher for Linked Data Structure.",
+  "description": "Source code, fixed workloads, checkpoints, Docker image, expected results, evaluation workflow, and camera-ready artifact appendix for the MICRO 2026 paper Loop-Decoupled Prefetcher for Linked Data Structure.",
   "upload_type": "software",
   "access_right": "open",
   "license": "bsd-3-clause",
-  "version": "micro26-final",
-  "publication_date": "2026-08-28",
+  "version": "micro26-final-r1",
+  "publication_date": "2026-08-29",
   "creators": [
     {
       "name": "Zong, Pengchen",

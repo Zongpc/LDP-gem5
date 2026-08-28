@@ -2,12 +2,14 @@
 
 The permanent archive is available through
 <https://doi.org/10.5281/zenodo.21502244>.
+The camera-ready appendix is also provided as
+[`paper/MICRO26_Artifact_Appendix.pdf`](paper/MICRO26_Artifact_Appendix.pdf).
 
 ## 1. What the artifact evaluates
 
 This artifact provides a compact reproduction of the performance trend in
 Fig. 18 of the paper *Loop-Decoupled Prefetcher for Linked Data Structure* and
-a mechanism-level loop-decoupling ablation corresponding to Fig. 24.
+a mechanism-level loop-decoupling ablation corresponding to Fig. 25.
 
 The nine tasks cover:
 
@@ -194,7 +196,7 @@ The analysis directory contains:
 - `speedup.csv` and `summary.txt`: overall performance reproduction;
 - `mechanism.csv` and `mechanism_summary.csv`: auditable ablation data;
 - `mechanism_validation.txt`: collection checks; and
-- `mechanism.png`: Fig. 24-style visualization.
+- `mechanism.png`: Fig. 25 loop-decoupling-ablation visualization.
 
 The `fast` profile is intended for timely functional and trend validation.
 Running to completion gives LDP more opportunities to act in later workload

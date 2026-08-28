@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use this artifact, please cite the MICRO 2026 paper and the archived artifact."
 title: "LDP-gem5: MICRO 2026 Artifact for the Loop-Decoupled Prefetcher"
 type: software
-version: "micro26-final"
-date-released: "2026-08-28"
+version: "micro26-final-r1"
+date-released: "2026-08-29"
 authors:
   - family-names: Zong
     given-names: Pengchen

@@ -10,13 +10,16 @@ accesses are interleaved with outer-loop accesses. It uses loop decoupling,
 bidirectional pattern reconstruction, and cross-loop prefetching to recognize
 these accesses and start future traversals early.
 
+The camera-ready artifact appendix is available as
+[`paper/MICRO26_Artifact_Appendix.pdf`](paper/MICRO26_Artifact_Appendix.pdf).
+
 ## Artifact scope
 
 The artifact evaluates six applications (BFS, MST, SSSP, hash join probe,
 group-by, and IPv4 lookup) in nine task/input combinations. The workflow
 compares no-prefetching, LDP without loop decoupling, and full LDP. It
 reproduces the performance direction and trend of the representative subset
-from Fig. 18 and generates a Fig. 24-style loop-decoupling ablation plot.
+from Fig. 18 and generates the loop-decoupling ablation from Fig. 25.
 
 This compact workflow does not reproduce all 13 paper applications or all
 prefetchers in Fig. 18. The `fast` profile uses bounded simulation windows for
@@ -58,7 +61,8 @@ results/fast/analysis/mechanism.png
 ```
 
 Open `results/fast/analysis/mechanism.png` directly on the host to view the
-Fig. 24-style result. No GUI or display server is required inside Docker.
+Fig. 25 loop-decoupling ablation. No GUI or display server is required inside
+Docker.
 
 Run the completion-based profile with:
 
